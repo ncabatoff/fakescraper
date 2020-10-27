@@ -2,7 +2,7 @@ package fakescraper
 
 import (
 	"bytes"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 )
@@ -28,14 +28,14 @@ func NewFakeScraper() *FakeScraper {
 	return &FakeScraper{dummyResponseWriter{header: make(http.Header)}}
 }
 
-// Ask prometheus to handle a scrape request so we can capture and return the output.
+// Scrape asks prometheus to handle a scrape request so we can capture and return the output.
 func (fs *FakeScraper) Scrape() string {
 	httpreq, err := http.NewRequest("GET", "/metrics", nil)
 	if err != nil {
 		log.Fatalf("Error building request: %v", err)
 	}
 
-	prometheus.Handler().ServeHTTP(&fs.dummyResponseWriter, httpreq)
+	promhttp.Handler().ServeHTTP(&fs.dummyResponseWriter, httpreq)
 	s := fs.String()
 	fs.Truncate(0)
 	return s
